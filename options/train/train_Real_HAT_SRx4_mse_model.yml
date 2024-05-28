@@ -8,7 +8,28 @@ manual_seed: 0
 # ----------------- options for synthesizing training data in RealESRNetModel ----------------- #
 gt_usm: True  # USM the ground-truth
 
-# the first degradation process
+degree_list: ['weak_degrade_one_stage', 'standard_degrade_one_stage', 'severe_degrade_two_stage']
+degree_prob: [0.3, 0.3, 0.4]
+
+# the degradation process of weak_degrade_one_stage
+resize_prob_weak1: [0.1, 0.2, 0.7]  # up, down, keep
+resize_range_weak1: [0.85, 1.2]
+gaussian_noise_prob_weak1: 0.5
+noise_range_weak1: [1, 10]
+poisson_scale_range_weak1: [0.05, 0.5]
+gray_noise_prob_weak1: 0.4
+jpeg_range_weak1: [90, 95]
+
+# the degradation process of standard_degrade_one_stage
+resize_prob_standard1: [0.3, 0.4, 0.3]  # up, down, keep
+resize_range_standard1: [0.5, 1.2]
+gaussian_noise_prob_standard1: 0.5
+noise_range_standard1: [1, 20]
+poisson_scale_range_standard1: [0.05, 1.5]
+gray_noise_prob_standard1: 0.4
+jpeg_range_standard1: [50, 95]
+
+# the first degradation process of severe_degrade_two_stage
 resize_prob: [0.2, 0.7, 0.1]  # up, down, keep
 resize_range: [0.15, 1.5]
 gaussian_noise_prob: 0.5
@@ -17,7 +38,7 @@ poisson_scale_range: [0.05, 3]
 gray_noise_prob: 0.4
 jpeg_range: [30, 95]
 
-# the second degradation process
+# the second degradation process of severe_degrade_two_stage
 second_blur_prob: 0.8
 resize_prob2: [0.3, 0.4, 0.3]  # up, down, keep
 resize_range2: [0.3, 1.2]
@@ -26,7 +47,6 @@ noise_range2: [1, 25]
 poisson_scale_range2: [0.05, 2.5]
 gray_noise_prob2: 0.4
 jpeg_range2: [30, 95]
-
 gt_size: 256
 queue_size: 180
 
@@ -35,23 +55,43 @@ datasets:
   train:
     name: DF2K+OST
     type: RealESRGANDataset
-    dataroot_gt: datasets/DFO/DFO_sub # Refer to Real-ESRGAN for OST dataset. Only DF2K is OK.
+    dataroot_gt: datasets/dental # Refer to Real-ESRGAN for OST dataset. Only DF2K is OK.
     meta_info_file: hat/data/meta_info/meta_info_DFOsub_GT.txt
     io_backend:
       type: disk
 
+    blur_kernel_size_weak1: 21
+    blur_kernel_size_minimum_weak1: 7
+    kernel_list_weak1: [ 'iso', 'aniso' ]
+    kernel_prob_weak1: [ 0.65, 0.35 ]
+    sinc_prob_weak1: 0
+    blur_sigma_weak1: [ 0.2, 0.8 ]
+    betag_range_weak1: [ 0.5, 4 ]
+    betap_range_weak1: [ 1, 2 ]
+
+    blur_kernel_size_standard1: 21
+    blur_kernel_size_minimum_standard1: 7
+    kernel_list_standard1: [ 'iso', 'aniso' ]
+    kernel_prob_standard1: [ 0.65, 0.35 ]
+    sinc_prob_standard1: 0
+    blur_sigma_standard1: [ 0.2, 1.5 ]
+    betag_range_standard1: [ 0.5, 4 ]
+    betap_range_standard1: [ 1, 2 ]
+
     blur_kernel_size: 21
-    kernel_list: ['iso', 'aniso', 'generalized_iso', 'generalized_aniso', 'plateau_iso', 'plateau_aniso']
-    kernel_prob: [0.45, 0.25, 0.12, 0.03, 0.12, 0.03]
-    sinc_prob: 0.1
+    blur_kernel_size_minimum: 7
+    kernel_list: [ 'iso', 'aniso']
+    kernel_prob: [ 0.65, 0.35]
+    sinc_prob: 0
     blur_sigma: [0.2, 3]
     betag_range: [0.5, 4]
     betap_range: [1, 2]
 
     blur_kernel_size2: 21
-    kernel_list2: ['iso', 'aniso', 'generalized_iso', 'generalized_aniso', 'plateau_iso', 'plateau_aniso']
-    kernel_prob2: [0.45, 0.25, 0.12, 0.03, 0.12, 0.03]
-    sinc_prob2: 0.1
+    blur_kernel_size2_minimum: 7
+    kernel_list2: [ 'iso', 'aniso' ]
+    kernel_prob2: [ 0.65, 0.35 ]
+    sinc_prob2: 0
     blur_sigma2: [0.2, 1.5]
     betag_range2: [0.5, 4]
     betap_range2: [1, 2]
@@ -79,22 +119,7 @@ datasets:
 
 # network structures
 network_g:
-  type: HAT
-  upscale: 4
-  in_chans: 3
-  img_size: 64
-  window_size: 16
-  compress_ratio: 3
-  squeeze_factor: 30
-  conv_scale: 0.01
-  overlap_ratio: 0.5
-  img_range: 1.
-  depths: [6, 6, 6, 6, 6, 6]
-  embed_dim: 180
-  num_heads: [6, 6, 6, 6, 6, 6]
-  mlp_ratio: 2
-  upsampler: 'pixelshuffle'
-  resi_connection: '1conv'
+  type: CFAT
 
 # path
 path:
@@ -119,10 +144,10 @@ train:
 
   scheduler:
     type: MultiStepLR
-    milestones: [1000000]
+    milestones: [4000]
     gamma: 0.5
 
-  total_iter: 1000000
+  total_iter: 4000
   warmup_iter: -1  # no warm up
 
   # losses
