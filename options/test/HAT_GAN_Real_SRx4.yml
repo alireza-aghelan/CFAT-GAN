@@ -12,7 +12,7 @@ datasets:
   test_1:  # the 1st test dataset
     name: custom
     type: SingleImageDataset
-    dataroot_lq: input_dir
+    dataroot_lq: /content/HAT/LR
     io_backend:
       type: disk
 
@@ -38,7 +38,7 @@ network_g:
 
 # path
 path:
-  pretrain_network_g: ./experiments/pretrained_models/Real_HAT_GAN_SRx4.pth
+  pretrain_network_g: ./experiments/pretrained_models/RealHATGAN.pth
   strict_load_g: true
   param_key_g: 'params_ema'
 
